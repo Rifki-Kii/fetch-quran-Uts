@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daftar Surah - Al-Quran</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    
+</head>
+<body>
+
+<div class="container mt-5">
+    <h5>Uts by rifki M</h1>
+    <h1>Daftar Surah - Al-Quran</h1>
+  
+
+    
+    <div id="surahlist" class="row"></div>
+
+    <!-- Menampilkan detail surah setelah diklik -->
+    <div id="surah-detail" style="display: none;">
+        <h3 id="surah-name" class="text-center"></h3>
+        <p id="surah-meaning" class="text-center font-weight-bold"></p>
+        <p id="surah-description"></p>
+
+        <div id="ayat-list"></div>
+
+        <a class="back-btn" onclick="goBack()">Kembali ke Daftar Surah</a>
+    </div>
+</div>
+
+<script>
+    function fetchSurahList() {
+        $.ajax({
+            url: "https://equran.id/api/surat", 
+            method: "GET",
+            dataType: "json",
+            success: function(response) {
+                console.log(response);
+
+                
+                response.forEach(function(surah) {
+                    const surahName = surah.nama_latin; 
+                    const surahId = surah.nomor;       
+
+                   
+                    $('#surahlist').append(
+                        `<div class="col-md-4 mb-4">
+                            <div class="card shadow-sm">
+                                <div class="card-body">
+                                    <h5 class="card-title" onclick="showSurahDetail(${surahId})">${surahId}. ${surahName}</h5>
+                                </div>
+                            </div>
+                        </div>`
+                    );
+                });
+            },
+            error: function(xhr, status, error) {
+                console.error("Error fetching Surah data: ", error);
+            }
+        });
+    }
+
+   //Detail surat
+    function showSurahDetail(surahId) {
+        $.ajax({
+            url: `https://equran.id/api/v2/surat/${surahId}`, 
+            method: "GET",
+            dataType: "json",
+            success: function(response) {
+                const surah = response.data;
+                const surahName = surah.namaLatin;  
+                const surahArti = surah.arti;       
+                const surahDescription = surah.deskripsi; 
+
+                
+                $('#surah-name').text(surahName);
+                $('#surah-meaning').text(surahArti);
+                $('#surah-description').html(surahDescription);
+
+                $('#ayat-list').empty();
+
+               
+                surah.ayat.forEach(function(ayat) {
+                    $('#ayat-list').append(
+                        `<div class="card mb-3">
+                            <div class="card-body">
+                                <p class="ayat-arab">${ayat.teksArab}</p>
+                                <p class="ayat-translation">${ayat.teksIndonesia}</p>
+                            </div>
+                        </div>`
+                    );
+                });
+
+             
+                $('#surahlist').hide();
+                $('#surah-detail').show();
+            },
+            error: function(xhr, status, error) {
+                console.error("Error fetching Surah detail data: ", error);
+            }
+        });
+    }
+
+
+    function goBack() {
+        $('#surahlist').show();  
+        $('#surah-detail').hide();
+    }
+
+  
+    $(document).ready(function() {
+        fetchSurahList(); //
+    });
+</script>
+
+</body>
+</html>
